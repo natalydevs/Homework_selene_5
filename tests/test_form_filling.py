@@ -22,25 +22,26 @@ def test_form_filling(set_browser):
     browser.element('#subjectsInput').type('Chemistry').press_enter()
 
     # Hobbies
-    browser.element('[for="hobbies-checkbox-2"]').click()  # Reading
-    browser.element('[for="hobbies-checkbox-3"]').click()  # Music
+    browser.element('[for="hobbies-checkbox-2"]').click()
+    browser.element('[for="hobbies-checkbox-3"]').click()
 
-    # Upload (без переменных — сразу абсолютный путь)
+    # Upload — без промежуточной переменной
     browser.element('#uploadPicture').set_value(
         str((Path(__file__).parents[1] / 'resources' / 'cat.png').resolve())
     )
 
-    # Адрес
+    # Address
     browser.element('#currentAddress').type('Sevastopol,Lenina str., 1')
 
-    # Иногда баннер/футер мешают — прибираем
+    # Иногда мешают баннер/футер
     browser.execute_script("document.querySelector('#fixedban')?.remove();document.querySelector('footer')?.remove();")
 
-    # State / City
+    # State
     browser.element('#state').perform(command.js.scroll_into_view).click()
     browser.element('div[class$="-menu"]').should(be.visible)
     browser.all('[id^="react-select-3-option-"]').element_by(have.exact_text('Haryana')).click()
 
+    # City
     browser.element('#city').perform(command.js.scroll_into_view).click()
     browser.element('div[class$="-menu"]').should(be.visible)
     browser.all('[id^="react-select-4-option-"]').element_by(have.exact_text('Karnal')).click()
@@ -48,15 +49,15 @@ def test_form_filling(set_browser):
     # Submit
     browser.element('#submit').perform(command.js.scroll_into_view).click()
 
-    # ПРОВЕРКИ (это делает скрипт — тестом)
+    # Проверки (делают это именно тестом)
     browser.element('#example-modal-sizes-title-lg').should(have.exact_text('Thanks for submitting the form'))
-    table = browser.element('.table-responsive')
-    table.should(have.text('Liza Koss'))
-    table.should(have.text('lizakoss.demoqa.v1@mailinator.com'))
-    table.should(have.text('Female'))
-    table.should(have.text('4564978762'))
-    table.should(have.text('15 March,2000'))
-    table.should(have.text('Chemistry'))
-    table.should(have.text('Reading, Music'))
-    table.should(have.text('Haryana Karnal'))
-    table.should(have.text('Sevastopol,Lenina str., 1'))
+    summary = browser.element('.table-responsive')
+    summary.should(have.text('Liza Koss'))
+    summary.should(have.text('lizakoss.demoqa.v1@mailinator.com'))
+    summary.should(have.text('Female'))
+    summary.should(have.text('4564978762'))
+    summary.should(have.text('15 March,2000'))
+    summary.should(have.text('Chemistry'))
+    summary.should(have.text('Reading, Music'))
+    summary.should(have.text('Haryana Karnal'))
+    summary.should(have.text('Sevastopol,Lenina str., 1'))
