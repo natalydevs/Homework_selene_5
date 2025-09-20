@@ -2,56 +2,62 @@ from selene import be, have, command
 from selene.support.shared import browser
 from pathlib import Path
 
+
 def test_form_filling(set_browser):
+    browser.open('https://demoqa.com/automation-practice-form')
+
+    b = browser.with_(timeout=10)
+
     # Имя/Фамилия/Email/Телефон
-    browser.element('#firstName').type('Liza')
-    browser.element('#lastName').type('Koss')
-    browser.element('#userEmail').type('lizakoss.demoqa.v1@mailinator.com')
-    browser.element('[for="gender-radio-2"]').should(be.visible).click()
-    browser.element('#userNumber').type('4564978762')
+    b.element('#firstName').should(be.visible).type('Liza')
+    b.element('#lastName').should(be.visible).type('Koss')
+    b.element('#userEmail').should(be.visible).type('lizakoss.demoqa.v1@mailinator.com')
 
-    # Дата рождения через виджет
-    browser.element('#dateOfBirthInput').click()
-    browser.element('.react-datepicker__month-select').click()
-    browser.all('.react-datepicker__month-select option').element_by(have.exact_text('March')).click()
-    browser.element('.react-datepicker__year-select').click()
-    browser.all('.react-datepicker__year-select option').element_by(have.exact_text('2000')).click()
-    browser.element('.react-datepicker__day--015:not(.react-datepicker__day--outside-month)').click()
+    # Gender — скроллим и кликаем JS-ом (чтоб ничего не перехватило)
+    #b.element('[for="gender-radio-2"]').perform(command.js.scroll_into_view)
+    b.element('[for="gender-radio-2"]').click()
 
-    # Subjects — выбрать из подсказки
-    browser.element('#subjectsInput').type('Chemistry').press_enter()
+    b.element('#userNumber').type('4564978762')
 
-    # Hobbies
-    browser.element('[for="hobbies-checkbox-2"]').click()
-    browser.element('[for="hobbies-checkbox-3"]').click()
+    # Дата рождения
+    b.element('#dateOfBirthInput').click()
+    b.element('.react-datepicker').should(be.visible)
+    b.element('.react-datepicker__month-select').click()
+    b.all('.react-datepicker__month-select option').element_by(have.exact_text('March')).click()
+    b.element('.react-datepicker__year-select').click()
+    b.all('.react-datepicker__year-select option').element_by(have.exact_text('2000')).click()
+    b.element('.react-datepicker__day--015:not(.react-datepicker__day--outside-month)').click()
 
-    # Upload — без промежуточной переменной
-    browser.element('#uploadPicture').set_value(
+    # Subjects
+    b.element('#subjectsInput').type('Chemistry').press_enter()
+
+    # Hobbies — тоже через JS-клик (бывает перекрытие)
+    b.element('[for="hobbies-checkbox-2"]').click()
+    b.element('[for="hobbies-checkbox-3"]').click()
+
+    # Upload
+    b.element('#uploadPicture').set_value(
         str((Path(__file__).parents[1] / 'resources' / 'cat.png').resolve())
     )
 
     # Address
-    browser.element('#currentAddress').type('Sevastopol,Lenina str., 1')
+    b.element('#currentAddress').type('Sevastopol,Lenina str., 1')
 
-    # Иногда мешают баннер/футер
-    browser.execute_script("document.querySelector('#fixedban')?.remove();document.querySelector('footer')?.remove();")
+    # State/City
+    b.element('#state').perform(command.js.scroll_into_view).click()
+    b.element('div[class$="-menu"]').should(be.visible)
+    b.all('[id^="react-select-3-option-"]').element_by(have.exact_text('Haryana')).click()
 
-    # State
-    browser.element('#state').perform(command.js.scroll_into_view).click()
-    browser.element('div[class$="-menu"]').should(be.visible)
-    browser.all('[id^="react-select-3-option-"]').element_by(have.exact_text('Haryana')).click()
+    b.element('#city').click()
+    b.element('div[class$="-menu"]').should(be.visible)
+    b.all('[id^="react-select-4-option-"]').element_by(have.exact_text('Karnal')).click()
 
-    # City
-    browser.element('#city').perform(command.js.scroll_into_view).click()
-    browser.element('div[class$="-menu"]').should(be.visible)
-    browser.all('[id^="react-select-4-option-"]').element_by(have.exact_text('Karnal')).click()
+    # Submit — скролл + JS
+    b.element('#submit').perform(command.js.click)
 
-    # Submit
-    browser.element('#submit').perform(command.js.scroll_into_view).click()
-
-    # Проверки (делают это именно тестом)
-    browser.element('#example-modal-sizes-title-lg').should(have.exact_text('Thanks for submitting the form'))
-    summary = browser.element('.table-responsive')
+    # Проверки
+    b.element('#example-modal-sizes-title-lg').should(have.exact_text('Thanks for submitting the form'))
+    summary = b.element('.table-responsive')
     summary.should(have.text('Liza Koss'))
     summary.should(have.text('lizakoss.demoqa.v1@mailinator.com'))
     summary.should(have.text('Female'))
