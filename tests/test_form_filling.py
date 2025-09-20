@@ -8,18 +8,17 @@ def test_form_filling(set_browser):
 
     b = browser.with_(timeout=10)
 
-    # Имя/Фамилия/Email/Телефон
+    # First Name/ Last Name/ Email
     b.element('#firstName').should(be.visible).type('Liza')
     b.element('#lastName').should(be.visible).type('Koss')
     b.element('#userEmail').should(be.visible).type('lizakoss.demoqa.v1@mailinator.com')
 
-    # Gender — скроллим и кликаем JS-ом (чтоб ничего не перехватило)
-    #b.element('[for="gender-radio-2"]').perform(command.js.scroll_into_view)
+    # Gender
     b.element('[for="gender-radio-2"]').click()
 
     b.element('#userNumber').type('4564978762')
 
-    # Дата рождения
+    # DOB
     b.element('#dateOfBirthInput').click()
     b.element('.react-datepicker').should(be.visible)
     b.element('.react-datepicker__month-select').click()
@@ -31,19 +30,19 @@ def test_form_filling(set_browser):
     # Subjects
     b.element('#subjectsInput').type('Chemistry').press_enter()
 
-    # Hobbies — тоже через JS-клик (бывает перекрытие)
+    # Hobbies
     b.element('[for="hobbies-checkbox-2"]').click()
     b.element('[for="hobbies-checkbox-3"]').click()
 
-    # Upload
+    # Upload file
     b.element('#uploadPicture').set_value(
         str((Path(__file__).parents[1] / 'resources' / 'cat.png').resolve())
     )
 
     # Address
-    b.element('#currentAddress').type('Sevastopol,Lenina str., 1')
+    b.element('#currentAddress').type('Sevastopol,Test str., 1')
 
-    # State/City
+    # State/City.
     b.element('#state').perform(command.js.scroll_into_view).click()
     b.element('div[class$="-menu"]').should(be.visible)
     b.all('[id^="react-select-3-option-"]').element_by(have.exact_text('Haryana')).click()
@@ -52,10 +51,10 @@ def test_form_filling(set_browser):
     b.element('div[class$="-menu"]').should(be.visible)
     b.all('[id^="react-select-4-option-"]').element_by(have.exact_text('Karnal')).click()
 
-    # Submit — скролл + JS
+    # Submit
     b.element('#submit').perform(command.js.click)
 
-    # Проверки
+    # Verifying sent test data
     b.element('#example-modal-sizes-title-lg').should(have.exact_text('Thanks for submitting the form'))
     summary = b.element('.table-responsive')
     summary.should(have.text('Liza Koss'))
@@ -66,4 +65,4 @@ def test_form_filling(set_browser):
     summary.should(have.text('Chemistry'))
     summary.should(have.text('Reading, Music'))
     summary.should(have.text('Haryana Karnal'))
-    summary.should(have.text('Sevastopol,Lenina str., 1'))
+    summary.should(have.text('Sevastopol,Test str., 1'))
